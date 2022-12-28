@@ -1,10 +1,11 @@
+from optparse import Option
 import aiohttp
 import functools
 
 
 from importlib import import_module
 from fastapi import Request, Response, HTTPException, status
-from typing import List
+from typing import List, Optional
 
 from exceptions import (AuthTokenMissing, AuthTokenExpired, AuthTokenCorrupted)
 from network import make_request
@@ -12,14 +13,16 @@ from network import make_request
 
 def route(
         request_method, path: str, status_code: int,
-        payload_key: str, service_url: str,
-        authentication_required: bool = False,
-        post_processing_func: str = None,
+        service_url: str,
+        payload_key:  Optional[str] = None,
+        authentication_required: Optional[bool] = False,
+        post_processing_func:  Optional[str] = None,
         authentication_token_decoder: str = 'auth.decode_access_token',
         service_authorization_checker: str = 'auth.is_admin_user',
         service_header_generator: str = 'auth.generate_request_header',
-        response_model: str = None,
-        response_list: bool = False
+        response_model: Optional[str] = None,
+        response_list: Optional[bool] = False,
+        tags :Optional[list[str]] = []
 ):
     """
     it is an advanced wrapper for FastAPI router, purpose is to make FastAPI
@@ -52,7 +55,8 @@ def route(
 
     app_any = request_method(
         path, status_code=status_code,
-        response_model=response_model
+        response_model=response_model,
+        tags = tags
     )
 
     def wrapper(f):
@@ -113,7 +117,7 @@ def route(
             payload = payload_obj.dict() if payload_obj else {}
 
             url = f'{service_url}{path}'
-
+         
             try:
                 resp_data, status_code_from_service = await make_request(
                     url=url,
@@ -148,7 +152,7 @@ def route(
     return wrapper
 
 
-def import_function(method_path):
+def import_function(method_path:str):
     module, method = method_path.rsplit('.', 1)
     mod = import_module(module)
     return getattr(mod, method, lambda *args, **kwargs: None)
