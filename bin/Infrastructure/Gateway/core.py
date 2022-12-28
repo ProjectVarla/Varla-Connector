@@ -7,22 +7,24 @@ from importlib import import_module
 from fastapi import Request, Response, HTTPException, status
 from typing import List, Optional
 
-from exceptions import (AuthTokenMissing, AuthTokenExpired, AuthTokenCorrupted)
-from network import make_request
+from .exceptions import AuthTokenMissing, AuthTokenExpired, AuthTokenCorrupted
+from .network import make_request
 
 
 def route(
-        request_method, path: str, status_code: int,
-        service_url: str,
-        payload_key:  Optional[str] = None,
-        authentication_required: Optional[bool] = False,
-        post_processing_func:  Optional[str] = None,
-        authentication_token_decoder: str = 'auth.decode_access_token',
-        service_authorization_checker: str = 'auth.is_admin_user',
-        service_header_generator: str = 'auth.generate_request_header',
-        response_model: Optional[str] = None,
-        response_list: Optional[bool] = False,
-        tags :Optional[list[str]] = []
+    request_method,
+    path: str,
+    status_code: int,
+    service_url: str,
+    payload_key: Optional[str] = None,
+    authentication_required: Optional[bool] = False,
+    post_processing_func: Optional[str] = None,
+    authentication_token_decoder: str = "auth.decode_access_token",
+    service_authorization_checker: str = "auth.is_admin_user",
+    service_header_generator: str = "auth.generate_request_header",
+    response_model: Optional[str] = None,
+    response_list: Optional[bool] = False,
+    tags: Optional[list[str]] = [],
 ):
     """
     it is an advanced wrapper for FastAPI router, purpose is to make FastAPI
@@ -54,9 +56,7 @@ def route(
             response_model = List[response_model]
 
     app_any = request_method(
-        path, status_code=status_code,
-        response_model=response_model,
-        tags = tags
+        path, status_code=status_code, response_model=response_model, tags=tags
     )
 
     def wrapper(f):
@@ -67,14 +67,12 @@ def route(
 
             if authentication_required:
                 # authentication
-                authorization = request.headers.get('authorization')
+                authorization = request.headers.get("authorization")
                 token_decoder = import_function(authentication_token_decoder)
                 exc = None
                 try:
                     token_payload = token_decoder(authorization)
-                except (AuthTokenMissing,
-                        AuthTokenExpired,
-                        AuthTokenCorrupted) as e:
+                except (AuthTokenMissing, AuthTokenExpired, AuthTokenCorrupted) as e:
                     exc = str(e)
                 except Exception as e:
                     # in case a new decoder is used by dependency injection and
@@ -85,7 +83,7 @@ def route(
                         raise HTTPException(
                             status_code=status.HTTP_401_UNAUTHORIZED,
                             detail=exc,
-                            headers={'WWW-Authenticate': 'Bearer'},
+                            headers={"WWW-Authenticate": "Bearer"},
                         )
 
                 # authorization
@@ -97,27 +95,25 @@ def route(
                     if not is_user_eligible:
                         raise HTTPException(
                             status_code=status.HTTP_403_FORBIDDEN,
-                            detail='You are not allowed to access this scope.',
-                            headers={'WWW-Authenticate': 'Bearer'},
+                            detail="You are not allowed to access this scope.",
+                            headers={"WWW-Authenticate": "Bearer"},
                         )
 
                 # service headers
                 if service_header_generator:
-                    header_generator = import_function(
-                        service_header_generator
-                    )
+                    header_generator = import_function(service_header_generator)
                     service_headers = header_generator(token_payload)
 
             scope = request.scope
 
-            method = scope['method'].lower()
-            path = scope['path']
+            method = scope["method"].lower()
+            path = scope["path"]
 
             payload_obj = kwargs.get(payload_key)
             payload = payload_obj.dict() if payload_obj else {}
 
-            url = f'{service_url}{path}'
-         
+            url = f"{service_url}{path}"
+
             try:
                 resp_data, status_code_from_service = await make_request(
                     url=url,
@@ -128,22 +124,19 @@ def route(
             except aiohttp.client_exceptions.ClientConnectorError:
                 raise HTTPException(
                     status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                    detail='Service is unavailable.',
-                    headers={'WWW-Authenticate': 'Bearer'},
+                    detail="Service is unavailable.",
+                    headers={"WWW-Authenticate": "Bearer"},
                 )
             except aiohttp.client_exceptions.ContentTypeError:
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail='Service error.',
-                    headers={'WWW-Authenticate': 'Bearer'},
+                    detail="Service error.",
+                    headers={"WWW-Authenticate": "Bearer"},
                 )
 
             response.status_code = status_code_from_service
 
-            if all([
-                status_code_from_service == status_code,
-                post_processing_func
-            ]):
+            if all([status_code_from_service == status_code, post_processing_func]):
                 post_processing_f = import_function(post_processing_func)
                 resp_data = post_processing_f(resp_data)
 
@@ -152,7 +145,7 @@ def route(
     return wrapper
 
 
-def import_function(method_path:str):
-    module, method = method_path.rsplit('.', 1)
+def import_function(method_path: str):
+    module, method = method_path.rsplit(".", 1)
     mod = import_module(module)
     return getattr(mod, method, lambda *args, **kwargs: None)
