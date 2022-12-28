@@ -8,6 +8,7 @@ from Services import BackupInterface, TaskInterface
 
 app = FastAPI(title="Varla-Connector")
 
+load_dotenv()
 PORT: int = int(getenv("GATEWAY_PORT"))
 
 TaskInterface(app, ["Tasks"])
