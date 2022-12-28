@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+PyJWT
+python-dotenv
+
+# async http requests & fast dns resolving
+aiohttp
+aiodns
+
+# # for test purposes
+# flake8==3.8.3
+# ipdb==0.13.2
+# ipython==7.15.0

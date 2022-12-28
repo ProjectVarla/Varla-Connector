@@ -1,0 +1,19 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+fastapi = "*"
+uvicorn = "*"
+pyjwt = "*"
+aiohttp = "*"
+aiodns = "*"
+python-dotenv = "*"
+
+[dev-packages]
+black = "*"
+autoflake = "*"
+
+[requires]
+python_version = "3.10"
