@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 
 
-from .interface import Push_Notififcation
+from .interface import PushNotififcationInterface
 
-def NotificationInterface(app:FastAPI, tags:list[str] = []):
-    Push_Notififcation(app,tags)
+
+def NotificationInterface(app: FastAPI, tags: list[str] = []):
+    PushNotififcationInterface(app, tags)

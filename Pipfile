@@ -10,6 +10,7 @@ pyjwt = "*"
 aiohttp = "*"
 aiodns = "*"
 python-dotenv = "*"
+requests = "*"
 
 [dev-packages]
 black = "*"
