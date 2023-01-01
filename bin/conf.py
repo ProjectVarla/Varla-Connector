@@ -9,7 +9,7 @@ load_dotenv()
 
 
 class Settings(BaseSettings):
-    APP_NAME: str = "VARLA-CONNECTOR"
+    APP_NAME: str = "Varla-Connector"
 
     ACCESS_TOKEN_DEFAULT_EXPIRE_MINUTES: int = 360
     GATEWAY_TIMEOUT: int = 59
@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     BACKUP_SERVICE_URL: Optional[str]
     TASKS_SERVICE_URL: Optional[str]
     NOTIFICATION_CORE_URL: Optional[str]
+    ORCHESTRATOR_INFRASTRUCTURE_URL: Optional[str]
+
     DEFAULT_CHANNEL: Optional[str] = "FileManager"
 
     GATEWAY_HOST: str
@@ -41,6 +43,10 @@ class Settings(BaseSettings):
     @validator("NOTIFICATION_CORE_URL", always=True)
     def notification_core_url_validator(cls, v):
         return getenv("NOTIFICATION_CORE_URL")
+
+    @validator("ORCHESTRATOR_INFRASTRUCTURE_URL", always=True)
+    def orchestrator_infrastructure_url_validator(cls, v):
+        return getenv("ORCHESTRATOR_INFRASTRUCTURE_URL")
 
 
 settings = Settings()
