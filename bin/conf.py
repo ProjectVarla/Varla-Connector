@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     ORCHESTRATOR_INFRASTRUCTURE_URL: Optional[str]
 
     DEFAULT_CHANNEL: Optional[str] = "FileManager"
+    DEBUG_MODE: Optional[bool] = False
 
     GATEWAY_HOST: str
     GATEWAY_PORT: int

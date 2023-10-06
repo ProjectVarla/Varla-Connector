@@ -11,6 +11,8 @@ aiohttp = "*"
 aiodns = "*"
 python-dotenv = "*"
 requests = "*"
+websockets = "*"
+websocket-client = "*"
 
 [dev-packages]
 black = "*"
